@@ -1,0 +1,574 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Grydon — Interactive Type Specimen</title>
+<style>
+  @font-face{font-family:'Grydon';font-weight:500;font-style:normal;font-display:swap;
+    src:url('Grydon-Medium.otf') format('opentype')}
+  @font-face{font-family:'Grydon';font-weight:700;font-style:normal;font-display:swap;
+    src:url('Grydon-Bold.otf') format('opentype')}
+  @font-face{font-family:'Grydon';font-weight:900;font-style:normal;font-display:swap;
+    src:url('Grydon-Black.otf') format('opentype')}
+  :root{
+    --bg:#ffffff; --ink:#0f0f0f; --soft:#6b6b6b; --surface:#f4f4f2;
+    --border:#e3e3de; --accent:#0f0f0f; --accent-soft:#f4f4f2; --gold:#0f0f0f;
+    --spring:cubic-bezier(.34,1.56,.64,1);
+    --w:500;            /* live weight */
+    --play-size:96px;   /* playground size */
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:'Grydon',system-ui,sans-serif;background:var(--bg);color:var(--ink);
+       -webkit-font-smoothing:antialiased;line-height:1.2}
+  .wrap{max-width:none;margin:0;padding:0 clamp(28px,7vw,240px)}
+  .kicker{font-size:13px;font-weight:500;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
+  .soft{color:var(--soft)}
+  h2.section{font-size:clamp(28px,4vw,42px);font-weight:700;letter-spacing:-.01em;margin:8px 0}
+
+  /* ---------- top bar + marquee ---------- */
+  .topbar{display:flex;justify-content:space-between;align-items:center;padding:22px 0;border-bottom:1px solid var(--border)}
+  .brand{font-weight:700;font-size:20px}
+  .topbar nav a{color:var(--soft);text-decoration:none;font-size:14px;margin-left:26px;transition:color .2s}
+  .topbar nav a:hover{color:var(--ink)}
+
+  .marquee-wrap{padding:36px 0 18px}
+  .marquee{position:relative;border:2px solid var(--ink);height:230px;overflow:hidden;display:flex;align-items:center;border-radius:4px}
+  .marquee-track{display:flex;gap:54px;align-items:center;white-space:nowrap;
+       padding-left:54px;animation:scroll 22s linear infinite;will-change:transform}
+  .marquee:hover .marquee-track{animation-play-state:paused}
+  .marquee-track span{font-weight:900;font-size:150px;line-height:1}
+  @keyframes scroll{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+  .marq-tag{display:inline-flex;gap:8px;align-items:center;font-size:13px;font-weight:500;
+       letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:14px}
+  .marq-cap{font-size:14px;color:var(--soft);margin-top:16px;max-width:680px}
+
+  /* ---------- specimen book ---------- */
+  section{padding:72px 0}
+  .specimen .head{max-width:760px;margin-bottom:48px}
+  .block{display:grid;grid-template-columns:460px 1fr;gap:72px;align-items:center;margin-bottom:56px}
+  .block.flip{grid-template-columns:1fr 460px}
+  .block.flip .tile{order:2}
+  .tile{position:relative;height:460px;background:var(--surface);border-radius:6px;
+        display:flex;flex-direction:column;justify-content:space-between;padding:24px 28px;overflow:hidden}
+  .tile .glabel{font-size:13px;font-weight:500;letter-spacing:.06em;color:var(--soft)}
+  .tile .uni{display:flex;justify-content:space-between;font-size:13px;color:var(--soft)}
+  .tile .dot{color:var(--accent)}
+  .tile .big{flex:1;display:flex;align-items:center;justify-content:center;font-size:300px;line-height:1;
+        cursor:default;transition:transform .5s var(--spring);transform-origin:center}
+  .tile:hover .big{transform:scale(1.12)}
+  .para h3{font-size:26px;font-weight:700;margin-bottom:16px}
+  .para p{font-size:16px;color:var(--soft);line-height:1.65;margin-bottom:18px}
+  .para .tags{display:flex;gap:16px;font-size:13px;letter-spacing:.04em}
+  .para .tags b{font-weight:500}
+
+  /* ---------- playground ---------- */
+  .play{background:var(--surface)}
+  .play .controls{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:20px;margin:22px 0}
+  .seg{display:inline-flex;background:#fff;border:1px solid var(--border);border-radius:999px;padding:4px;gap:4px}
+  .seg button{border:0;background:transparent;font-family:inherit;font-size:15px;color:var(--ink);
+       padding:10px 22px;border-radius:999px;cursor:pointer;transition:all .2s}
+  .seg button.on{background:var(--accent);color:#fff;font-weight:500}
+  .sizer{display:flex;align-items:center;gap:14px;font-size:14px;color:var(--soft)}
+  .sizer input{accent-color:var(--accent);width:180px}
+  .sizer .val{color:var(--ink);font-weight:500;min-width:56px;text-align:right}
+  .canvas{background:#fff;border:1.5px solid var(--border);border-radius:14px;padding:44px 48px;min-height:240px;
+       display:flex;align-items:center}
+  .field{font-size:var(--play-size);font-weight:var(--w);line-height:1.12;width:100%;outline:none;
+       letter-spacing:-.01em;caret-color:var(--accent)}
+  .field:empty:before{content:attr(data-ph);color:#c9c9c4}
+  .hint{font-size:15px;color:var(--soft);margin-top:18px}
+
+  /* ---------- glyph grid ---------- */
+  .gridhead{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:16px}
+  .toolbar{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:16px;margin:24px 0}
+  .tabs{display:flex;flex-wrap:wrap;gap:8px}
+  .tabs button{border:0;background:var(--surface);color:var(--ink);font-family:inherit;font-size:14px;
+       padding:9px 18px;border-radius:999px;cursor:pointer;transition:all .2s}
+  .tabs button.on{background:var(--ink);color:#fff;font-weight:500}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(76px,1fr));gap:8px;margin-top:8px}
+  .glyph{position:relative;aspect-ratio:1;background:var(--surface);border:1px solid transparent;border-radius:20px;
+       display:flex;align-items:center;justify-content:center;font-size:45px;font-weight:var(--w);cursor:pointer;
+       transition:transform .4s var(--spring),background .25s,color .2s,box-shadow .35s,border-color .2s;
+       transform-origin:center;will-change:transform}
+  .glyph.lift2{transform:scale(1.12);z-index:8}
+  .glyph.lift1{transform:scale(1.3);z-index:14}
+  .glyph.hot{transform:scale(1.7);background:var(--ink);color:#fff;border-color:var(--ink);
+       box-shadow:0 16px 34px rgba(0,0,0,.28);z-index:30}
+  .glyph.flash{animation:flash .45s ease}
+  @keyframes flash{0%{box-shadow:0 0 0 0 rgba(0,0,0,.45)}100%{box-shadow:0 0 0 22px rgba(0,0,0,0)}}
+
+
+  .callout{display:flex;align-items:center;gap:24px;background:var(--accent-soft);border-radius:16px;padding:22px 28px;margin-top:28px}
+  .callout .demo{height:96px;width:96px;display:flex;align-items:center;justify-content:center}
+  .callout .ctxt h4{font-size:18px;font-weight:500;margin-bottom:4px}
+  .callout .ctxt p{font-size:14px;color:var(--soft);line-height:1.5}
+
+  /* ---------- glyph layout: sticky metrics + scrolling grid ---------- */
+  .glyph-layout{display:grid;grid-template-columns:minmax(600px,860px) 1fr;gap:40px;margin-top:30px;align-items:start}
+  .metrics-pane{position:sticky;top:24px;align-self:start}
+  .metrics-box{position:relative;background:#070707;border-radius:10px;overflow:hidden;
+       box-shadow:0 18px 40px rgba(0,0,0,.18)}
+  .metric-svg{display:block;width:100%;height:auto}
+  .metric-info{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:14px;
+       font-size:13px;color:var(--soft)}
+  .metric-info .mchar{color:var(--ink);font-size:15px;font-weight:700}
+  .glyph-scroll{min-width:0}
+  .glyph-scroll .toolbar{margin-top:0}
+
+  /* ---------- footer ---------- */
+  footer{background:var(--ink);color:#fff;padding:64px 0 44px;margin-top:24px}
+  footer .row{display:flex;justify-content:space-between;flex-wrap:wrap;gap:40px}
+  footer .mk{font-size:40px;font-weight:900}
+  footer .tagline{color:#9a9a9a;margin-top:10px;font-size:16px}
+  footer .cols{display:flex;gap:64px}
+  footer .col h5{font-size:13px;letter-spacing:.16em;color:var(--accent);text-transform:uppercase;margin-bottom:12px}
+  footer .col a{display:block;color:#fff;text-decoration:none;font-size:15px;margin-bottom:10px;opacity:.92}
+  footer .col a:hover{opacity:.65}
+  footer hr{border:0;border-top:1px solid #333;margin:36px 0 18px}
+  footer .fine{display:flex;justify-content:space-between;color:#9a9a9a;font-size:13px;flex-wrap:wrap;gap:8px}
+
+  @media(max-width:900px){
+    .wrap{padding:0 28px}
+    .block,.block.flip{grid-template-columns:1fr;gap:28px}
+    .block.flip .tile{order:0}
+    .tile{height:320px}.tile .big{font-size:200px}
+    .glyph-layout{grid-template-columns:1fr;gap:30px}
+    .metrics-pane{position:static}
+    .metrics-box{max-width:420px}
+  }
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<div class="wrap">
+  <div class="topbar">
+    <div class="brand">Grydon™</div>
+    <nav>
+      <a href="#specimen">Specimen</a>
+      <a href="#play">Tester</a>
+      <a href="#glyphs">Glyphs</a>
+    </nav>
+  </div>
+</div>
+
+<!-- MARQUEE / RIBBON FRAME -->
+<div class="wrap marquee-wrap">
+  <div class="marq-tag">∞&nbsp; Continuous marquee</div>
+  <div class="marquee">
+    <div class="marquee-track" id="track"></div>
+  </div>
+  <p class="marq-cap">The frame holds the type. Text scrolls right-to-left in an endless loop — the masthead of the specimen. Hover to pause.</p>
+</div>
+
+<!-- SPECIMEN BOOK -->
+<section id="specimen" class="specimen">
+  <div class="wrap">
+    <div class="head">
+      <div class="kicker">Specimen book</div>
+      <h2 class="section">Three weights, one rational system</h2>
+    </div>
+
+    <div class="block">
+      <div class="tile">
+        <div class="glabel">Medium · 500</div>
+        <div class="big" style="font-weight:500">Rg</div>
+        <div class="uni"><span>U+0052 U+0067</span><span class="dot">●</span></div>
+      </div>
+      <div class="para">
+        <h3>Medium anchors the family</h3>
+        <p>Grydon is a display typeface drawn in three weights — Medium, Bold and Black. The Medium is its steady anchor: even color, open counters and a calm rhythm that reads well from short paragraphs up to mid-size headings.</p>
+        <div class="tags"><b>MEDIUM</b><span class="soft">weight: 500</span></div>
+      </div>
+    </div>
+
+    <div class="block flip">
+      <div class="tile">
+        <div class="glabel">Bold · 700</div>
+        <div class="big" style="font-weight:700">a</div>
+        <div class="uni"><span>U+0061</span><span class="dot">●</span></div>
+      </div>
+      <div class="para">
+        <h3>Bold carries the hierarchy</h3>
+        <p>The 700 weight is the workhorse for emphasis: section titles, labels and the louder end of a type scale. Stems thicken without smearing detail, so terminals and the ear of the g stay crisp even at small sizes.</p>
+        <div class="tags"><b>BOLD</b><span class="soft">weight: 700</span></div>
+      </div>
+    </div>
+
+    <div class="block">
+      <div class="tile">
+        <div class="glabel">Black · 900</div>
+        <div class="big" style="font-weight:900">&amp;</div>
+        <div class="uni"><span>U+0026</span><span class="dot">●</span></div>
+      </div>
+      <div class="para">
+        <h3>Black is the showstopper</h3>
+        <p>At 900 the strokes swell to their heaviest, packing maximum presence into posters, covers and oversized display lines. Counters tighten but stay legible, giving headlines real weight while the ampersand shows off the family’s character.</p>
+        <div class="tags"><b>BLACK</b><span class="soft">ampersand: U+0026</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PLAYGROUND -->
+<section id="play" class="play">
+  <div class="wrap">
+    <div class="kicker">Try it ↓</div>
+    <h2 class="section" style="font-weight:900;font-size:clamp(40px,6vw,64px)">Type here!</h2>
+
+    <div class="controls">
+      <div class="seg" id="weights">
+        <button data-w="500" class="on">Medium</button>
+        <button data-w="700">Bold</button>
+        <button data-w="900">Black</button>
+      </div>
+      <div class="sizer">
+        <span>Size</span>
+        <input type="range" id="size" min="32" max="180" value="96">
+        <span class="val" id="sizeval">96 px</span>
+      </div>
+    </div>
+
+    <div class="canvas">
+      <div class="field" id="field" contenteditable="true" spellcheck="false" data-ph="Type here…">Grydon answers, instantly</div>
+    </div>
+    <p class="hint">Type with your keyboard, or click any glyph below to drop it in here.</p>
+  </div>
+</section>
+
+<!-- GLYPH GRID -->
+<section id="glyphs">
+  <div class="wrap">
+    <div class="gridhead">
+      <div>
+        <div class="kicker">Glyph set</div>
+        <h2 class="section"><span id="count">0</span> glyphs, one click away</h2>
+      </div>
+      <div class="soft" style="font-size:15px;max-width:320px;text-align:right">Click a glyph to inspect it on the left and drop it into the tester.</div>
+    </div>
+
+    <div class="glyph-layout">
+
+      <!-- LEFT: fixed metrics system -->
+      <div class="metrics-pane">
+        <div class="metrics-box">
+          <svg class="metric-svg" viewBox="0 0 1600 1200" preserveAspectRatio="xMidYMid meet" aria-hidden="true">
+            <!-- selected glyph, scaled to the unit grid (UPM 1000, baseline y=801, 0.67 px/unit) -->
+            <text id="metricChar" x="800" y="801" font-size="670" text-anchor="middle"
+                  font-family="Grydon" font-weight="500" fill="#e9e3d3">A</text>
+            <!-- metric guides (solid, beige) — equal side margins, run full width under the labels -->
+            <g stroke="#e5decf" stroke-width="2">
+              <line x1="70" y1="265" x2="1530" y2="265"/> <!-- Asc  800 -->
+              <line x1="70" y1="281" x2="1530" y2="281"/> <!-- Cap  776 -->
+              <line x1="70" y1="439" x2="1530" y2="439"/> <!-- X    540 -->
+              <line x1="70" y1="801" x2="1530" y2="801"/> <!-- Base   0 -->
+              <line x1="70" y1="935" x2="1530" y2="935"/> <!-- Desc -200 -->
+            </g>
+            <!-- labels sit just above the left start of each line -->
+            <g fill="#e5decf" font-family="Grydon" font-weight="500" font-size="28" text-anchor="start">
+              <text x="70" y="255">Asc</text>
+              <text x="70" y="315">Cap</text>
+              <text x="70" y="429">X</text>
+              <text x="70" y="791">Base</text>
+              <text x="70" y="925">Desc</text>
+            </g>
+          </svg>
+        </div>
+        <div class="metric-info">
+          <span class="mchar"><span id="mGlyph">A</span>&nbsp;&nbsp;<span class="soft" id="mCode" style="font-weight:400">U+0041</span></span>
+          <span class="soft">UPM 1000 · Base = 0</span>
+        </div>
+      </div>
+
+      <!-- RIGHT: scrolling glyph grid -->
+      <div class="glyph-scroll">
+        <div class="toolbar">
+          <div class="tabs" id="tabs"></div>
+          <div class="seg" id="weights2">
+            <button data-w="500" class="on">Medium</button>
+            <button data-w="700">Bold</button>
+            <button data-w="900">Black</button>
+          </div>
+        </div>
+        <div class="grid" id="grid"></div>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="wrap">
+    <div class="row">
+      <div>
+        <div class="mk">Grydon™</div>
+        <div class="tagline">An interactive specimen — see it, set it, click every glyph.</div>
+      </div>
+      <div class="cols">
+        <div class="col">
+          <h5>Explore</h5>
+          <a href="#specimen">Specimen book</a>
+          <a href="#play">Type tester</a>
+          <a href="#glyphs">Glyph set</a>
+        </div>
+        <div class="col">
+          <h5>Weights</h5>
+          <a href="#play">Medium 500</a>
+          <a href="#play">Bold 700</a>
+          <a href="#play">Black 900</a>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <div class="fine"><span>Set in Grydon</span><span>Specimen concept · 2026</span></div>
+  </div>
+</footer>
+
+<script>
+/* ---------- marquee ---------- */
+(function(){
+  const track=document.getElementById('track');
+  const unit='<span>Grydon</span><span>®</span>';
+  track.innerHTML=(unit).repeat(8); // duplicated set; -50% loop is seamless
+})();
+
+/* ---------- glyph data ---------- */
+function range(a,b,skip){const o=[];for(let i=a;i<=b;i++){if(skip&&skip.includes(i))continue;o.push(String.fromCodePoint(i));}return o;}
+
+/* ---------- glyph-support detection (single Unicode chars) ---------- */
+const _ctx=document.createElement('canvas').getContext('2d');
+function supported(ch){
+  _ctx.font='48px Grydon';
+  const notdef=_ctx.measureText('￿').width;   // width of the missing-glyph box
+  const w=_ctx.measureText(ch).width;
+  return w>0 && Math.abs(w-notdef)>0.5;            // differs from notdef ⇒ real glyph
+}
+function cp(ch){return 'U+'+ch.codePointAt(0).toString(16).toUpperCase().padStart(4,'0');}
+
+/* ---------- glyph candidates (Unicode-mapped; filtered to what the font has) ---------- */
+const LETTERS_U=[
+  ...range(0x41,0x5A), ...range(0x61,0x7A),       // A–Z a–z
+  ...range(0xC0,0xFF,[0xD7,0xF7]),                // accented Latin À..ÿ
+  ...range(0x100,0x17F),                          // Latin Extended-A
+  ...range(0x180,0x21F),                          // Latin Extended-B (filtered)
+  'Δ','Ω','π','ꙮ'                                 // requested extras (omultiocular-cy etc.)
+];
+const PUNCT_U=['.',',',';',':','…','‚','„','!','¡','?','¿','·','•','‘','’','“','”',"'",'"',
+  '‹','›','«','»','(',')','[',']','{','}','-','–','—','_','/','\\','|','&','@','*','§','¶','†','‡','¦'];
+const SYM_U=['#','%','‰','+','−','×','÷','=','≠','<','>','≤','≥','±','~','¬','^','∞','≈','√','∂','∑','∏','∫','◊','µ','№','℅','°','©','®','™','′','″',
+  '$','¢','£','¤','¥','₩','€','₽','₹','ƒ',
+  '←','↑','→','↓','↔','↕'];
+const DIA_U=['¨','¯','´','¸','ˆ','ˇ','˘','˙','˚','˛','˜','˝','`'];
+const FRAC_U=['½','¼','¾','⅓','⅔','⅛','⅜','⅝','⅞','⅕','⅖','⅗','⅘','⅙','⅚','⅐','⅑','⅒'];
+/* ligatures present in the font (curated list) — rendered via OpenType features */
+const LIGA_NAMES=['A_D','A_E','A_F','A_R','C_H','C_O','D_C','D_O','H_E','H_F','H_L','L_A','L_E','L_H','L_I','L_L','L_O','L_R','L_U','N_N','O_C','O_F','O_G','O_I','O_N','O_O','O_R','T_T','U_E','U_R','c_t','f_f','f_f_i','f_f_j','f_f_l','f_f_t','f_i','f_j','f_l','f_m','f_n','f_r','f_t','f_u','s_t','t_i','t_m','t_n','t_r','t_t','t_u','f_f_i.ss01','f_f_j.ss01','f_i.ss01','f_j.ss01','t_i.ss01'];
+
+/* ---------- full glyph inventory (real glyph names from the font source) ---------- */
+const GLYPHNAMES=`A, Aacute, Abreve, Acircumflex, Adieresis, Adotaccent, Agrave, Amacron, Aogonek, Aring, Atilde, AE, B, C, Cacute, Ccaron, Ccedilla, Ccircumflex, Cdotaccent, D, Dcaron, Dcroat, Eth, E, Eacute, Ebreve, Ecaron, Ecircumflex, Edieresis, Edotaccent, Egrave, Emacron, Eogonek, Etilde, Schwa, F, G, Gbreve, Gcaron, Gcircumflex, Gcommaaccent, Gdotaccent, Gmacron, Gstroke, H, Hbar, Hcircumflex, I, IJ, Iacute, Ibreve, Icircumflex, Idieresis, Idotaccent, Idotbelow, Igrave, Imacron, Iogonek, Itilde, J, Jacute, Jcircumflex, K, Kcaron, Kcommaaccent, L, Lacute, Lcaron, Lcommaaccent, Ldot, Lslash, M, N, Nacute, Ncaron, Ncommaaccent, Ntilde, Eng, O, Oacute, Obreve, Ocircumflex, Odieresis, Odotbelow, Ograve, Ohungarumlaut, Omacron, Oogonek, Oslash, Otilde, OE, P, Thorn, Q, R, Racute, Rcaron, Rcommaaccent, S, Sacute, Scaron, Scedilla, Scircumflex, Scommaaccent, Germandbls, T, Tbar, Tcaron, Tcedilla, Tcommaaccent, U, Uacute, Ubreve, Ucircumflex, Udieresis, Udotbelow, Ugrave, Uhungarumlaut, Umacron, Uogonek, Uring, Utilde, V, W, Wacute, Wcircumflex, Wdieresis, Wgrave, X, Y, Yacute, Ycircumflex, Ydieresis, Ygrave, Ymacron, Ytilde, Z, Zacute, Zcaron, Zdotaccent, Saltillo, A.ss01, Aacute.ss01, Abreve.ss01, Acircumflex.ss01, Adieresis.ss01, Adotaccent.ss01, Agrave.ss01, Amacron.ss01, Aogonek.ss01, Aring.ss01, Atilde.ss01, M.ss01, N.ss01, Nacute.ss01, Ncaron.ss01, Ncommaaccent.ss01, Ntilde.ss01, Eng.ss01, O.ss01, Oacute.ss01, Obreve.ss01, Ocircumflex.ss01, Odieresis.ss01, Odotbelow.ss01, Ograve.ss01, Ohungarumlaut.ss01, Omacron.ss01, Oogonek.ss01, Otilde.ss01, Q.ss01, U.ss01, Uacute.ss01, Ubreve.ss01, Ucircumflex.ss01, Udieresis.ss01, Udotbelow.ss01, Ugrave.ss01, Uhungarumlaut.ss01, Umacron.ss01, Uogonek.ss01, Uring.ss01, Utilde.ss01, A_D, A_E, A_F, A_R, C_H, C_O, D_C, D_O, H_E, H_F, H_L, L_A, L_E, L_H, L_I, L_L, L_O, L_R, L_U, N_N, O_C, O_F, O_G, O_I, O_N, O_O, O_R, T_T, U_E, U_R, a, aacute, abreve, acircumflex, adieresis, adotaccent, agrave, amacron, aogonek, aring, atilde, ae, b, c, cacute, ccaron, ccedilla, ccircumflex, cdotaccent, d, dcaron, dcroat, eth, e, eacute, ebreve, ecaron, ecircumflex, edieresis, edotaccent, egrave, emacron, eogonek, etilde, schwa, f, g, gbreve, gcaron, gcircumflex, gcommaaccent, gdotaccent, gmacron, gstroke, h, hbar, hcircumflex, i, idotless, iacute, ibreve, icircumflex, idieresis, igrave, imacron, iogonek, itilde, ij, j, jdotless, jcircumflex, k, kcaron, kcommaaccent, l, lacute, lcaron, lcommaaccent, ldot, lslash, m, n, nacute, ncaron, ncommaaccent, ntilde, eng, o, oacute, obreve, ocircumflex, odieresis, odotbelow, ograve, ohungarumlaut, omacron, oogonek, oslash, otilde, oe, p, thorn, q, r, racute, rcaron, rcommaaccent, s, sacute, scaron, scedilla, scircumflex, scommaaccent, germandbls, t, tbar, tcaron, tcedilla, tcommaaccent, u, uacute, ubreve, ucircumflex, udieresis, udotbelow, ugrave, uhungarumlaut, umacron, uogonek, uring, utilde, v, w, wacute, wcircumflex, wdieresis, wgrave, x, y, yacute, ycircumflex, ydieresis, ygrave, ymacron, ytilde, z, zacute, zcaron, zdotaccent, saltillo, g.ss01, gbreve.ss01, gcaron.ss01, gcircumflex.ss01, gcommaaccent.ss01, gdotaccent.ss01, gmacron.ss01, gstroke.ss01, i.ss01, ij.ss01, j.ss01, c_t, f_f, f_f_i, f_f_j, f_f_l, f_f_t, f_i, f_j, f_l, f_m, f_n, f_r, f_t, f_u, s_t, t_i, t_m, t_n, t_r, t_t, t_u, f_f_i.ss01, f_f_j.ss01, f_i.ss01, f_j.ss01, t_i.ss01, omultiocular-cy, Delta, Omega, pi, zero, one, two, three, four, five, six, seven, eight, nine, zero.osf, one.osf, two.osf, three.osf, four.osf, five.osf, six.osf, seven.osf, eight.osf, nine.osf, zero.slashed, zero.dnom, one.dnom, two.dnom, three.dnom, four.dnom, five.dnom, six.dnom, seven.dnom, eight.dnom, nine.dnom, zero.numr, one.numr, two.numr, three.numr, four.numr, five.numr, six.numr, seven.numr, eight.numr, nine.numr, fraction, onefraction, onehalf, onethird, twothirds, onequarter, threequarters, onefifth, twofifths, threefifths, fourfifths, onesixth, fivesixths, oneeighth, threeeighths, fiveeighths, seveneighths, zeroinferior, oneinferior, twoinferior, threeinferior, fourinferior, fiveinferior, sixinferior, seveninferior, eightinferior, nineinferior, zerosuperior, onesuperior, twosuperior, threesuperior, foursuperior, fivesuperior, sixsuperior, sevensuperior, eightsuperior, ninesuperior, space, .notdef, .null, CR, punctCross-runic, punctCross-runic.ss01, period, comma, colon, semicolon, ellipsis, exclam, exclamdown, question, questiondown, periodcentered, bullet, asterisk, asterism, numbersign, slash, backslash, twoasterisksvertical, periodcentered.case, bullet.case, slash.case, backslash.case, ellipsis.vert, period.ss01, comma.ss01, colon.ss01, semicolon.ss01, ellipsis.ss01, exclam.ss01, question.ss01, slash.ss01, backslash.ss01, slash.ss01.case, backslash.ss01.case, ellipsis.vert.ss01, hyphen, endash, emdash, underscore, hyphen.case, endash.case, emdash.case, parenleft, parenright, braceleft, braceright, bracketleft, bracketright, angleLeft, angleRight, blacklenticularbracketleft, blacklenticularbracketright, dblanglebracketleft, dblanglebracketright, leftDoubleParen, rightDoubleParen, parenleft.case, parenright.case, braceleft.case, braceright.case, bracketleft.case, bracketright.case, parenleft.ss01, parenright.ss01, leftDoubleParen.ss01, parenleft.ss02, parenright.ss02, parenleft.ss03, parenright.ss03, parenleft.ss04, parenright.ss04, quotesinglbase, quotedblbase, quotedblleft, quotedblright, quoteleft, quoteright, guillemetleft, guillemetright, guilsinglleft, guilsinglright, quotedbl, quotesingle, guillemetleft.case, guillemetright.case, guilsinglleft.case, guilsinglright.case, quotesinglbase.ss01, quotedblbase.ss01, quotedblleft.ss01, quotedblright.ss01, quoteleft.ss01, quoteright.ss01, baht, comet, leftWhiteIndex, rightWhiteIndex, whiteFrowningFace, whiteSmilingFace, blackSmilingFace, heartWhiteSuit, heartBlackSuit, whiteFlag, blackFlag, pick, historicSite, fourTeardropSpokedAsterisk, blackFourPointedStar, whiteFourPointedStar, sixPointedBlackStar, heavyEightPointedRectilinearBlackStar, rotatedFloralHeartBullet, at, ampersand, paragraph, section, copyright, registered, published, trademark, degree, bar, brokenbar, dagger, literSign, daggerdbl, numero, propellor, at.case, bar.case, brokenbar.case, leftWhiteIndex.ss01, rightWhiteIndex.ss01, rotatedFloralHeartBullet.ss01, ampersand.ss01, bar.ss01, brokenbar.ss01, leftWhiteIndex.ss02, rightWhiteIndex.ss02, leftWhiteIndex.ss03, rightWhiteIndex.ss03, bar.case.ss01, brokenbar.case.ss01, cent, currency, dollar, euro, hryvnia, ruble, rupeeIndian, sheqel, sterling, won, yen, plus, minus, multiply, divide, equal, notequal, greater, less, greaterequal, lessequal, plusminus, approxequal, asciitilde, logicalnot, asciicircum, infinity, integral, product, summation, radical, partialdiff, micro, percent, perthousand, plus.case, minus.case, multiply.case, divide.case, equal.case, notequal.case, greater.case, less.case, greaterequal.case, lessequal.case, plusminus.case, upArrow, northEastArrow, rightArrow, southEastArrow, downArrow, southWestArrow, leftArrow, northWestArrow, leftRightArrow, upDownArrow, leftFrombarArrow, upFrombarArrow, rightFrombarArrow, downFrombarArrow, downZigzagArrow, upTipLeftArrow, upTipRightArrow, downTipLeftArrow, downTipRightArrow, upArrow.ss01, northEastArrow.ss01, rightArrow.ss01, southEastArrow.ss01, downArrow.ss01, southWestArrow.ss01, leftArrow.ss01, northWestArrow.ss01, leftRightArrow.ss01, upDownArrow.ss01, dottedCircle, lozenge, dieresis, dotaccent, grave, acute, hungarumlaut, circumflex, caron, breve, ring, tilde, macron, cedilla, ogonek, dieresis.case, dotaccent.case, grave.case, acute.case, hungarumlaut.case, circumflex.case, caron.case, breve.case, ring.case, tilde.case, macron.case, cedilla.case, ogonek.case`;
+
+const DIGITWORD={zero:'0',one:'1',two:'2',three:'3',four:'4',five:'5',six:'6',seven:'7',eight:'8',nine:'9'};
+const COMBINING={acute:'́',grave:'̀',circumflex:'̂',tilde:'̃',dieresis:'̈',macron:'̄',breve:'̆',dotaccent:'̇',ring:'̊',caron:'̌',cedilla:'̧',commaaccent:'̧',ogonek:'̨',hungarumlaut:'̋',dotbelow:'̣'};
+const SPECIAL={AE:'Æ',ae:'æ',OE:'Œ',oe:'œ',Eth:'Ð',eth:'ð',Thorn:'Þ',thorn:'þ',Schwa:'Ə',schwa:'ə',Eng:'Ŋ',eng:'ŋ',IJ:'Ĳ',ij:'ĳ',Germandbls:'ẞ',germandbls:'ß',Dcroat:'Đ',dcroat:'đ',Hbar:'Ħ',hbar:'ħ',Lslash:'Ł',lslash:'ł',Tbar:'Ŧ',tbar:'ŧ',Gstroke:'Ǥ',gstroke:'ǥ',Oslash:'Ø',oslash:'ø',Ldot:'Ŀ',ldot:'ŀ',idotless:'ı',jdotless:'ȷ',Idotaccent:'İ',Saltillo:'Ꞌ',saltillo:'ꞌ',Scommaaccent:'Ș',scommaaccent:'ș',Tcommaaccent:'Ț',tcommaaccent:'ț',Scedilla:'Ş',scedilla:'ş',Tcedilla:'Ţ',tcedilla:'ţ',Delta:'Δ',Omega:'Ω',pi:'π','omultiocular-cy':'ꙮ'};
+const FRACTION={onehalf:'½',onethird:'⅓',twothirds:'⅔',onequarter:'¼',threequarters:'¾',onefifth:'⅕',twofifths:'⅖',threefifths:'⅗',fourfifths:'⅘',onesixth:'⅙',fivesixths:'⅚',oneeighth:'⅛',threeeighths:'⅜',fiveeighths:'⅝',seveneighths:'⅞',fraction:'⁄',onefraction:'⅟'};
+const PUNCTMAP={period:'.',comma:',',colon:':',semicolon:';',ellipsis:'…',exclam:'!',exclamdown:'¡',question:'?',questiondown:'¿',periodcentered:'·',bullet:'•',asterisk:'*',asterism:'⁂',slash:'/',backslash:'\\',twoasterisksvertical:'⁑',hyphen:'-',endash:'–',emdash:'—',underscore:'_',parenleft:'(',parenright:')',braceleft:'{',braceright:'}',bracketleft:'[',bracketright:']',angleLeft:'〈',angleRight:'〉',blacklenticularbracketleft:'【',blacklenticularbracketright:'】',dblanglebracketleft:'《',dblanglebracketright:'》',leftDoubleParen:'⸨',rightDoubleParen:'⸩',quotesinglbase:'‚',quotedblbase:'„',quotedblleft:'“',quotedblright:'”',quoteleft:'‘',quoteright:'’',guillemetleft:'«',guillemetright:'»',guilsinglleft:'‹',guilsinglright:'›',quotedbl:'"',quotesingle:"'"};
+const DIAMAP={dieresis:'¨',dotaccent:'˙',grave:'`',acute:'´',hungarumlaut:'˝',circumflex:'ˆ',caron:'ˇ',breve:'˘',ring:'˚',tilde:'˜',macron:'¯',cedilla:'¸',ogonek:'˛'};
+const SYM={at:'@',ampersand:'&',paragraph:'¶',section:'§',copyright:'©',registered:'®',published:'℗',trademark:'™',degree:'°',bar:'|',brokenbar:'¦',dagger:'†',daggerdbl:'‡',literSign:'ℓ',numero:'№',propellor:'⌘',numbersign:'#',baht:'฿',cent:'¢',currency:'¤',dollar:'$',euro:'€',hryvnia:'₴',ruble:'₽',rupeeIndian:'₹',sheqel:'₪',sterling:'£',won:'₩',yen:'¥',plus:'+',minus:'−',multiply:'×',divide:'÷',equal:'=',notequal:'≠',greater:'>',less:'<',greaterequal:'≥',lessequal:'≤',plusminus:'±',approxequal:'≈',asciitilde:'~',logicalnot:'¬',asciicircum:'^',infinity:'∞',integral:'∫',product:'∏',summation:'∑',radical:'√',partialdiff:'∂',micro:'µ',percent:'%',perthousand:'‰',lozenge:'◊',dottedCircle:'◌',comet:'☄',leftWhiteIndex:'☜',rightWhiteIndex:'☞',whiteFrowningFace:'☹',whiteSmilingFace:'☺',blackSmilingFace:'☻',heartWhiteSuit:'♡',heartBlackSuit:'♥',whiteFlag:'⚐',blackFlag:'⚑',pick:'⛏',historicSite:'⌖',fourTeardropSpokedAsterisk:'✢',blackFourPointedStar:'✦',whiteFourPointedStar:'✧',sixPointedBlackStar:'✶',heavyEightPointedRectilinearBlackStar:'✴',rotatedFloralHeartBullet:'❧',upArrow:'↑',northEastArrow:'↗',rightArrow:'→',southEastArrow:'↘',downArrow:'↓',southWestArrow:'↙',leftArrow:'←',northWestArrow:'↖',leftRightArrow:'↔',upDownArrow:'↕',leftFrombarArrow:'↤',upFrombarArrow:'↥',rightFrombarArrow:'↦',downFrombarArrow:'↧',downZigzagArrow:'↯',upTipLeftArrow:'↰',upTipRightArrow:'↱',downTipLeftArrow:'↲',downTipRightArrow:'↳'};
+
+function isFigureName(b){return (b in DIGITWORD)||/^(zero|one|two|three|four|five|six|seven|eight|nine)(inferior|superior)$/.test(b)||(b in FRACTION);}
+function isLetterName(b){if(/^[A-Za-z]$/.test(b))return true;if(b in SPECIAL)return true;const m=b.match(/^([A-Za-z])([a-z]+)$/);return !!(m&&COMBINING[m[2]]);}
+function category(name){
+  if(name.indexOf('_')>-1)return 'ligatures';
+  const b=name.split('.')[0];
+  if(isFigureName(b))return 'figures';
+  if(b in DIAMAP)return 'diacritic';
+  if(isLetterName(b))return 'letters';
+  if(b in PUNCTMAP)return 'punctuation';
+  return 'symbols';
+}
+function resolve(name){
+  const p=name.split('.'); const b=p[0]; const sfx=p.slice(1);
+  const feats=[]; let vert=false;
+  sfx.forEach(s=>{
+    if(/^ss\d\d$/.test(s))feats.push('"'+s+'" 1');
+    else if(s==='case')feats.push('"case" 1');
+    else if(s==='osf')feats.push('"onum" 1');
+    else if(s==='dnom')feats.push('"dnom" 1');
+    else if(s==='numr')feats.push('"numr" 1');
+    else if(s==='slashed')feats.push('"zero" 1');
+    else if(s==='vert')vert=true;
+  });
+  const F=()=>feats.join(', ');
+  if(b.indexOf('_')>-1)return {t:b.split('_').join(''),feat:['"liga" 1','"dlig" 1','"clig" 1'].concat(feats).join(', ')};
+  if(b==='ellipsis'&&vert)return {t:'⋮',feat:F()};
+  let m=b.match(/^(zero|one|two|three|four|five|six|seven|eight|nine)(inferior|superior)$/);
+  if(m){feats.push(m[2]==='superior'?'"sups" 1':'"sinf" 1');return {t:DIGITWORD[m[1]],feat:feats.join(', ')};}
+  if(b in DIGITWORD)return {t:DIGITWORD[b],feat:F()};
+  if(b in FRACTION)return {t:FRACTION[b],feat:F()};
+  if(/^[A-Za-z]$/.test(b))return {t:b,feat:F()};
+  if(b in SPECIAL)return {t:SPECIAL[b],feat:F()};
+  m=b.match(/^([A-Za-z])([a-z]+)$/);
+  if(m&&COMBINING[m[2]])return {t:(m[1]+COMBINING[m[2]]).normalize('NFC'),feat:F()};
+  if(b in PUNCTMAP)return {t:PUNCTMAP[b],feat:F()};
+  if(b in DIAMAP)return {t:DIAMAP[b],feat:F()};
+  if(b in SYM)return {t:SYM[b],feat:F()};
+  return null;
+}
+
+/* ---------- assemble the categorised glyph set ---------- */
+function buildData(){
+  const names=GLYPHNAMES.split(',').map(s=>s.trim()).filter(Boolean);
+  const SKIP=new Set(['space','.notdef','.null','CR','nbspace']);
+  const out=[]; const seen=new Set();
+  names.forEach(name=>{
+    if(SKIP.has(name))return;
+    const r=resolve(name); if(!r)return;
+    if(!r.feat){ if(!supported(r.t))return; }       // plain glyphs: confirm the font has them
+    const key=r.t+'|'+r.feat;
+    if(seen.has(key))return; seen.add(key);
+    out.push({t:r.t,feat:r.feat||'',cat:category(name),name:name});
+  });
+  return out;
+}
+
+let SUP=[];
+const CATORDER=['all','letters','ligatures','figures','punctuation','symbols','diacritic'];
+const tabsEl=document.getElementById('tabs');
+function buildTabs(){
+  const present=new Set(SUP.map(d=>d.cat));
+  const cats=CATORDER.filter(c=>c==='all'||present.has(c));
+  tabsEl.innerHTML='';
+  cats.forEach((cat,i)=>{
+    const b=document.createElement('button');
+    b.textContent=cat[0].toUpperCase()+cat.slice(1);
+    if(i===0)b.classList.add('on');
+    b.onclick=()=>{document.querySelectorAll('#tabs button').forEach(x=>x.classList.remove('on'));b.classList.add('on');render(cat);};
+    tabsEl.appendChild(b);
+  });
+}
+
+/* ---------- metrics preview (left fixed pane) ---------- */
+let CURW='500';
+const metricChar=document.getElementById('metricChar');
+const mGlyph=document.getElementById('mGlyph');
+const mCode=document.getElementById('mCode');
+function setMetricChar(d){
+  if(!d)return;
+  if(typeof d==='string')d={t:d,feat:'',name:cp(d)};
+  metricChar.textContent=d.t;
+  metricChar.setAttribute('font-weight',CURW);
+  metricChar.style.fontFeatureSettings=d.feat||'normal';
+  mGlyph.textContent=d.t;
+  mGlyph.style.fontFeatureSettings=d.feat||'normal';
+  mCode.textContent=d.name;
+}
+
+/* ---------- build grid ---------- */
+const grid=document.getElementById('grid');
+function render(cat){
+  grid.innerHTML='';
+  SUP.filter(d=>cat==='all'||d.cat===cat).forEach(d=>{
+    const g=document.createElement('div');
+    g.className='glyph';
+    g.textContent=d.t;
+    if(d.feat)g.style.fontFeatureSettings=d.feat;
+    g.title=d.t+'  ·  '+d.name;
+    g._d=d;
+    grid.appendChild(g);
+  });
+  wire();
+}
+
+/* ---------- hover zoom ---------- */
+function wire(){
+  grid.querySelectorAll('.glyph').forEach(g=>{
+    g.addEventListener('mouseenter',()=>{
+      g.classList.add('hot');
+    });
+    g.addEventListener('mouseleave',()=>{
+      g.classList.remove('hot');
+    });
+    // keep caret in field while clicking a glyph
+    g.addEventListener('pointerdown',e=>e.preventDefault());
+    g.addEventListener('click',()=>{
+      setMetricChar(g._d);
+      insertGlyph(g._d.t);
+      g.classList.remove('flash');void g.offsetWidth;g.classList.add('flash');
+    });
+  });
+}
+
+/* ---------- playground: insert, weight, size ---------- */
+const field=document.getElementById('field');
+let savedRange=null;
+document.addEventListener('selectionchange',()=>{
+  const sel=window.getSelection();
+  if(sel.rangeCount&&field.contains(sel.anchorNode))savedRange=sel.getRangeAt(0).cloneRange();
+});
+function insertGlyph(ch){
+  const sx=window.scrollX, sy=window.scrollY;      // remember scroll so the page doesn't jump
+  field.focus({preventScroll:true});
+  const sel=window.getSelection();
+  let range=savedRange;
+  if(!range||!field.contains(range.startContainer)){
+    range=document.createRange();range.selectNodeContents(field);range.collapse(false);
+  }
+  range.deleteContents();
+  const node=document.createTextNode(ch);
+  range.insertNode(node);
+  range.setStartAfter(node);range.collapse(true);
+  sel.removeAllRanges();sel.addRange(range);
+  savedRange=range.cloneRange();
+  window.scrollTo(sx,sy);                           // restore — no auto-scroll to the tester
+}
+
+function setWeight(w){
+  CURW=w;
+  document.documentElement.style.setProperty('--w',w);
+  metricChar.setAttribute('font-weight',w);
+  [['weights'],['weights2']].forEach(([id])=>{
+    document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
+  });
+}
+document.querySelectorAll('#weights button,#weights2 button').forEach(b=>{
+  b.onclick=()=>setWeight(b.dataset.w);
+});
+
+const size=document.getElementById('size'),sizeval=document.getElementById('sizeval');
+size.oninput=()=>{
+  document.documentElement.style.setProperty('--play-size',size.value+'px');
+  sizeval.textContent=size.value+' px';
+};
+
+function init(){
+  SUP=buildData();
+  if(!SUP.length)SUP=[{t:'A',cat:'letters',feat:'',name:'U+0041'}];
+  document.getElementById('count').textContent=SUP.length;
+  buildTabs();
+  render('all');
+  setMetricChar(SUP[0]);
+}
+function checkFont(){
+  const ok=document.fonts&&document.fonts.check('500 24px Grydon');
+  if(ok)return;
+  const b=document.createElement('div');
+  b.style.cssText='position:fixed;left:0;right:0;bottom:0;z-index:999;background:#0f0f0f;color:#fff;'+
+    'font:14px/1.5 system-ui,sans-serif;padding:14px 22px;display:flex;gap:16px;align-items:center;justify-content:center';
+  b.innerHTML='⚠️ Grydon font isn’t loading — currently showing a fallback. '+
+    'Keep <b style="margin:0 4px">Grydon-Medium / Bold / Black.otf</b> in the same folder as this HTML. '+
+    'If it still fails (Chrome blocks local fonts), open the file with Firefox or a local server. '+
+    '<span style="cursor:pointer;text-decoration:underline" onclick="this.parentNode.remove()">dismiss</span>';
+  document.body.appendChild(b);
+}
+if(document.fonts&&document.fonts.ready){
+  Promise.all([
+    document.fonts.load('500 48px Grydon'),
+    document.fonts.load('700 48px Grydon'),
+    document.fonts.load('900 48px Grydon')
+  ]).catch(()=>{}).then(()=>document.fonts.ready).then(init).then(()=>setTimeout(checkFont,600));
+}else{init();}
+</script>
+</body>
+</html>
