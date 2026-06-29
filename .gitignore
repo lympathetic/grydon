@@ -1,0 +1,8 @@
+# Reference material — NOT part of the published site
+Area - Geometric font family shaped by architecture.html
+Area - Geometric font family shaped by architecture_files/
+*.zip
+
+# OS / editor junk
+.DS_Store
+Thumbs.db

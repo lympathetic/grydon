@@ -19,6 +19,19 @@ same folder. (Opening the file directly in Chrome can block local fonts — use
 Firefox or a local web server if the font doesn't load. On GitHub Pages it
 loads fine over HTTPS.)
 
+## Editing in VS Code
+
+1. Open the folder in VS Code: **File ▸ Open Folder…** → select this folder.
+2. Edit `index.html` — everything (HTML, CSS, JS) lives in that one file.
+3. To preview with live reload, install the **Live Server** extension
+   (Extensions panel → search "Live Server" by Ritwick Dey → Install), then
+   right-click `index.html` → **Open with Live Server**. The page opens in your
+   browser and refreshes automatically on save.
+
+Page section order (top → bottom): hero (reserved) → about/specimen narrative →
+marquee → three-weight specimen → mockup showcase → type tester → glyph set →
+footer. Images live in `Grydon_svg/`.
+
 ## Hosting
 
 Published with **GitHub Pages** from the repository root.
