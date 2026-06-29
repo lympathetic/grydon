@@ -207,6 +207,8 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
      line-height:1.55;color:#b3ada1;margin:0 0 clamp(9px,1.1vw,16px)}
 .fc-col p:last-child{margin-bottom:0}
 .fc-col b{font-weight:700;color:#efe9e2;font-style:normal}
+.fc-col a{color:inherit;text-decoration:none;transition:color .2s}
+.fc-col a:hover{color:#efe9e2;text-decoration:underline;text-underline-offset:2px}
 
 /* ---------- hero (reserved for main image / start page) ---------- */
 .hero{min-height:50vh;display:flex;align-items:center;justify-content:center;
