@@ -13,7 +13,7 @@
   --border:#d8cfbb; --accent:#000000; --accent-soft:#e6dfcd; --gold:#000000;
   --spring:cubic-bezier(.34,1.56,.64,1);
   --w:500;            /* live weight */
-  --play-size:35px;   /* playground size */
+  --play-size:90px;   /* playground size */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;zoom:1.5;background:var(--bg)}   /* bake the 150% view in as the default; bg fills the scrollbar gutter so it isn't white */
@@ -329,7 +329,7 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
 }
 /* ---------- mobile (phones) ---------- */
 @media(max-width:540px){
-  html{zoom:1;overflow-x:clip;--play-size:50px}   /* phones: real viewport · kill the stray right-side overflow · smaller default tester size (#2) */
+  html{zoom:1;overflow-x:clip;--play-size:35px}   /* phones: real viewport · kill the stray right-side overflow · smaller default tester size (#2) */
   #vbar{zoom:1}               /* keep the custom scrollbar 1:1 now that html isn't zoomed */
   /* #1 — keep the metric box pinned at the top like desktop (tune the top offset here) */
   .metrics-pane{position:sticky;top:clamp(46px,11vw,64px)}
