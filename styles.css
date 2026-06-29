@@ -16,10 +16,19 @@
   --play-size:96px;   /* playground size */
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;zoom:1.5}   /* bake the 150% view in as the default so 100% browser zoom matches what was designed at 150% */
+html{scroll-behavior:smooth;zoom:1.5;background:var(--bg)}   /* bake the 150% view in as the default; bg fills the scrollbar gutter so it isn't white */
 body{font-family:'Grydon',system-ui,sans-serif;background:var(--bg);color:var(--ink);
      -webkit-font-smoothing:antialiased;line-height:1.2;overflow-x:hidden}
 img{max-width:100%}
+/* hide the native scrollbar; a custom floating bar (below) gives a truly transparent track over any background */
+html{scrollbar-width:none}
+::-webkit-scrollbar{width:0;height:0;display:none}
+#vbar{position:fixed;top:0;bottom:0;right:4px;width:7px;z-index:9999;zoom:.6667;pointer-events:none}
+#vthumb{position:absolute;left:0;top:0;width:100%;height:40px;border-radius:8px;background:#b5ca50;
+     pointer-events:auto;cursor:grab;opacity:0;transition:opacity .3s,background .2s}
+#vbar.on #vthumb{opacity:1}
+#vthumb:hover{background:#a4b943}
+#vthumb:active{cursor:grabbing}
 .wrap{max-width:1340px;margin:0 auto;padding:0 clamp(28px,7vw,240px)}   /* cap content width so wide screens mirror the tuned look (text doesn't go tiny relative to the layout) */
 .kicker{font-size:13px;font-weight:500;letter-spacing:.16em;color:var(--accent);text-transform:uppercase}
 .soft{color:var(--soft)}
@@ -134,9 +143,9 @@ section{padding:clamp(48px,6vw,92px) 0}
 .sizer .amax{font-size:18px}
 .sizer input[type=range]{-webkit-appearance:none;appearance:none;height:1px;background:#cdc6b8;
      width:clamp(100px,12vw,160px);outline:none;cursor:pointer}
-.sizer input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:11px;height:11px;
+.sizer input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;appearance:none;width:8px;height:8px;
      border-radius:50%;background:var(--ink);cursor:pointer}
-.sizer input[type=range]::-moz-range-thumb{width:11px;height:11px;border:0;border-radius:50%;background:var(--ink);cursor:pointer}
+.sizer input[type=range]::-moz-range-thumb{width:8px;height:8px;border:0;border-radius:50%;background:var(--ink);cursor:pointer}
 .canvas{background:transparent;border:0;border-radius:0;padding:clamp(16px,3vw,28px) 0;min-height:auto;
      display:flex;align-items:center;justify-content:center}
 .field{font-size:var(--play-size);font-weight:var(--w);line-height:1.12;width:100%;outline:none;
@@ -311,4 +320,24 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
   .about .body{column-count:1}
   .shot-row{grid-template-columns:1fr}
   footer .row{flex-direction:column;gap:28px}
+}
+/* ---------- mobile (phones) ---------- */
+@media(max-width:540px){
+  html{zoom:1}                /* phones use their real viewport — drop the 1.5× desktop zoom */
+  #vbar{zoom:1}               /* keep the custom scrollbar 1:1 now that html isn't zoomed */
+  /* footer stacks */
+  .foot-grid{flex-direction:column;align-items:flex-start;gap:30px}
+  .foot-credits{gap:24px;row-gap:22px}
+  .fc-col{min-width:0}
+  .fc-col p{font-size:13px;line-height:1.6;margin-bottom:14px}
+  .foot-mk{font-size:clamp(38px,12vw,52px)}
+  .foot-tag{font-size:16px}
+  .backtop{width:46px;height:46px}
+  /* text was tuned for the 1.5× zoom — bump it back up so it's readable on phones */
+  .spec-text,.onh-text,.about .body,.gg-text,.sketch-cap{font-size:13.5px}
+  .tabs button,.seg button{font-size:12px}
+  .metric-info,.metric-info .mchar{font-size:11px}
+  .hero-main{width:90%}
+  .grid{grid-template-columns:repeat(auto-fill,minmax(46px,1fr))}
+  .glyph{font-size:30px}
 }

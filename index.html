@@ -298,7 +298,7 @@
         </div>
         <div class="fc-col">
           <p>Graphics &amp; Type Design<br><b>Lym Dongchan Lim</b></p>
-          <p>Website Development &amp; Interaction<br><b>Haram Joung</b></p>
+          <p>Website Development &amp; Interaction<br><b>Haram Joung</b> | @harmang_joa</p>
         </div>
         <div class="fc-col">
           <p>Royal College of Art (UK)<br>MA Visual Communication</p>
@@ -308,6 +308,9 @@
     </div>
   </div>
 </footer>
+
+<!-- custom floating scrollbar (transparent track, point-colour thumb) -->
+<div id="vbar"><div id="vthumb"></div></div>
 
 <script>
 /* ---------- marquee (Title bar.svg strip, repeated; spacing baked into each copy so the -50% loop stays seamless) ---------- */
@@ -548,6 +551,40 @@ size.oninput=()=>{
     });
   },{threshold:0,rootMargin:'0px'});
   items.forEach(el=>io.observe(el));
+})();
+
+/* ---------- custom floating scrollbar (transparent track over any background) ---------- */
+(function(){
+  const bar=document.getElementById('vbar'), thumb=document.getElementById('vthumb');
+  if(!bar||!thumb)return;
+  const de=document.documentElement;
+  let dragging=false, startY=0, startScroll=0;
+  function update(){
+    const total=de.scrollHeight, view=de.clientHeight, scrolled=de.scrollTop||window.scrollY||0;
+    if(total<=view+2){bar.classList.remove('on');return;}
+    bar.classList.add('on');
+    const trackH=bar.getBoundingClientRect().height;            // actual rendered track height
+    const thumbH=Math.max(trackH*view/total,36);
+    const top=(scrolled/(total-view))*(trackH-thumbH);
+    thumb.style.height=thumbH+'px';
+    thumb.style.transform='translateY('+(top||0)+'px)';
+  }
+  thumb.addEventListener('mousedown',e=>{
+    dragging=true; startY=e.clientY; startScroll=de.scrollTop||window.scrollY||0;
+    document.body.style.userSelect='none'; e.preventDefault();
+  });
+  window.addEventListener('mousemove',e=>{
+    if(!dragging)return;
+    const total=de.scrollHeight, view=de.clientHeight;
+    const trackH=bar.getBoundingClientRect().height, thumbH=thumb.getBoundingClientRect().height;
+    const perPx=(total-view)/(trackH-thumbH);
+    window.scrollTo(0, startScroll+(e.clientY-startY)*perPx);
+  });
+  window.addEventListener('mouseup',()=>{dragging=false; document.body.style.userSelect='';});
+  window.addEventListener('scroll',update,{passive:true});
+  window.addEventListener('resize',update);
+  window.addEventListener('load',update);
+  update();
 })();
 
 function init(){
