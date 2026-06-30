@@ -203,15 +203,16 @@
 <!-- PLAYGROUND -->
 <section id="play" class="play">
   <div class="wrap">
+    <figure class="tester-title"><img src="Grydon_svg/Type%20tester.svg" alt="Type here"></figure>
     <div class="controls">
       <div class="seg" id="weights">
-        <button data-w="500" class="on">Medium</button>
+        <button data-w="500">Medium</button>
         <button data-w="700">Bold</button>
-        <button data-w="900">Black</button>
+        <button data-w="900" class="on">Black</button>
       </div>
       <div class="sizer">
         <span class="amin">A</span>
-        <input type="range" id="size" min="32" max="180" value="96">
+        <input type="range" id="size" min="32" max="180" value="70">
         <span class="amax">A</span>
       </div>
     </div>
@@ -228,7 +229,7 @@
     <div class="gridhead">
       <div>
         <div class="kicker">Glyph set</div>
-        <h2 class="section"><span id="count">0</span> glyphs, one click away</h2>
+        <h2 class="section"><span id="count">0</span> GLYPHS</h2>
       </div>
     </div>
 
@@ -265,16 +266,18 @@
         </div>
         <div class="toolbar">
           <div class="tabs" id="tabs"></div>
+        </div>
+      </div>
+
+      <!-- RIGHT: scrolling glyph grid -->
+      <div class="glyph-scroll">
+        <div class="glyph-weights">
           <div class="seg" id="weights2">
             <button data-w="500" class="on">Medium</button>
             <button data-w="700">Bold</button>
             <button data-w="900">Black</button>
           </div>
         </div>
-      </div>
-
-      <!-- RIGHT: scrolling glyph grid -->
-      <div class="glyph-scroll">
         <div class="grid" id="grid"></div>
       </div>
 
@@ -525,6 +528,7 @@ function insertGlyph(d){
 function setWeight(w){
   CURW=w;
   document.documentElement.style.setProperty('--w',w);
+  document.documentElement.style.setProperty('--play-weight',w);
   metricChar.setAttribute('font-weight',w);
   [['weights'],['weights2']].forEach(([id])=>{
     document.querySelectorAll('#'+id+' button').forEach(b=>b.classList.toggle('on',b.dataset.w===w));
