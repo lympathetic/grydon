@@ -17,14 +17,19 @@
   --play-size:clamp(33px,6vw,87px);   /* tester field size — responsive: small on narrow screens, big on wide. slider overrides it live. tune the 22/6vw/80 */
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;zoom:1.5;background:var(--bg)}   /* bake the 150% view in as the default; bg fills the scrollbar gutter so it isn't white */
+html{scroll-behavior:smooth;background:var(--bg)}
+/* apply the 1.5× "designed at 150%" zoom ONLY on mouse/desktop — NOT on touch phones (so mobile media queries fire correctly). device-based → no oscillation, no iOS width inflation */
+@media (hover:hover) and (pointer:fine){
+  html{zoom:1.5}
+  #vbar{zoom:.6667}
+}
 body{font-family:'Grydon',system-ui,sans-serif;background:var(--bg);color:var(--ink);
      -webkit-font-smoothing:antialiased;line-height:1.2;overflow-x:clip}   /* clip (not hidden) → no scrollbar gutter on the right, and doesn't break position:sticky */
 img{max-width:100%}
 /* hide the native scrollbar (both html and body) so no scrollbar gutter shows on the right; a custom floating bar (below) gives the visual */
 html,body{scrollbar-width:none;-ms-overflow-style:none}
 html::-webkit-scrollbar,body::-webkit-scrollbar,::-webkit-scrollbar{width:0;height:0;display:none}
-#vbar{position:fixed;top:0;bottom:0;right:4px;width:7px;z-index:9999;zoom:.6667;pointer-events:none}
+#vbar{position:fixed;top:0;bottom:0;right:4px;width:7px;z-index:9999;pointer-events:none}
 #vthumb{position:absolute;left:0;top:0;width:100%;height:40px;border-radius:8px;background:#b5ca50;
      pointer-events:auto;cursor:grab;opacity:0;transition:opacity .3s,background .2s}
 #vbar.on #vthumb{opacity:1}
@@ -334,10 +339,10 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
 }
 /* ---------- mobile (phones) ---------- */
 @media(max-width:540px){
-  html{zoom:1}   /* tester size is now responsive via the clamp in :root, so no mobile override needed */
+  /* zoom is now applied device-based (mouse only) higher up, so phones already have no zoom — don't re-set it here or narrow desktop windows oscillate */
   #vbar{display:none}         /* hide the custom scrollbar on phones */
   /* #1 — metric box pinned at top (lower the top number to raise it); cream bg so the scrolling grid doesn't show through the buttons */
-  .metrics-pane{position:sticky;top:clamp(36px,9vw,50px);background:var(--bg);padding-bottom:10px;z-index:20}
+  .metrics-pane{position:sticky;top:clamp(56px,14vw,78px);background:var(--bg);padding-bottom:10px;z-index:20}
   .metrics-pane .metric-info,.metrics-pane .toolbar{background:var(--bg)}   /* solid cream behind the buttons so the scrolling grid never shows through */
   /* footer stacks */
   .foot-grid{flex-direction:column;align-items:flex-start;gap:30px}
