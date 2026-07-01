@@ -14,16 +14,16 @@
   --spring:cubic-bezier(.34,1.56,.64,1);
   --w:500;            /* live weight (glyph grid) */
   --play-weight:900;  /* tester field weight — defaults to Black */
-  --play-size:87px;   /* tester field size — lower this to shrink "The Small Steps…" (match the slider's value too) */
+  --play-size:clamp(33px,6vw,87px);   /* tester field size — responsive: small on narrow screens, big on wide. slider overrides it live. tune the 22/6vw/80 */
 }
 *{box-sizing:border-box;margin:0;padding:0}
 html{scroll-behavior:smooth;zoom:1.5;background:var(--bg)}   /* bake the 150% view in as the default; bg fills the scrollbar gutter so it isn't white */
 body{font-family:'Grydon',system-ui,sans-serif;background:var(--bg);color:var(--ink);
-     -webkit-font-smoothing:antialiased;line-height:1.2;overflow-x:hidden}
+     -webkit-font-smoothing:antialiased;line-height:1.2;overflow-x:clip}   /* clip (not hidden) → no scrollbar gutter on the right, and doesn't break position:sticky */
 img{max-width:100%}
-/* hide the native scrollbar; a custom floating bar (below) gives a truly transparent track over any background */
-html{scrollbar-width:none}
-::-webkit-scrollbar{width:0;height:0;display:none}
+/* hide the native scrollbar (both html and body) so no scrollbar gutter shows on the right; a custom floating bar (below) gives the visual */
+html,body{scrollbar-width:none;-ms-overflow-style:none}
+html::-webkit-scrollbar,body::-webkit-scrollbar,::-webkit-scrollbar{width:0;height:0;display:none}
 #vbar{position:fixed;top:0;bottom:0;right:4px;width:7px;z-index:9999;zoom:.6667;pointer-events:none}
 #vthumb{position:absolute;left:0;top:0;width:100%;height:40px;border-radius:8px;background:#b5ca50;
      pointer-events:auto;cursor:grab;opacity:0;transition:opacity .3s,background .2s}
@@ -36,10 +36,10 @@ html{scrollbar-width:none}
 h2.section{font-size:clamp(22px,3.2vw,34px);font-weight:700;letter-spacing:-.01em;margin:8px 0}
 
 /* ---------- marquee (Frame.svg ribbon — masked, responsive) ---------- */
-.marquee-wrap{position:sticky;top:0;z-index:60;background:transparent;padding:6px clamp(28px,7vw,240px);margin-top:-1.6vw;max-width:none}   /* margin-top centres the ribbon on the black/cream boundary (more negative = up, less = down) */
+.marquee-wrap{position:sticky;top:0;z-index:60;background:transparent;padding:6px clamp(28px,7vw,240px);margin-top:-1.6vw;max-width:none}   /* PC: side padding insets the ribbon (mobile overrides this to full width). margin-top centres it on the boundary */
 .marquee{position:relative;width:100%;overflow:hidden;background:transparent}
 .marquee .frame-bg{display:block;width:100%;height:auto;pointer-events:none;position:relative;z-index:1}   /* natural PNG ratio — no stretch */
-.marquee-mask{position:absolute;top:9%;bottom:8%;left:4.6%;right:4.6%;overflow:hidden;display:flex;align-items:stretch;z-index:2}   /* PC: top/bottom = the band the text fills. Equal = vertically centred. Increase top → text DOWN, increase bottom → text UP */
+.marquee-mask{position:absolute;top:8.2%;bottom:8%;left:4.6%;right:4.6%;overflow:hidden;display:flex;align-items:stretch;z-index:2}   /* PC: top/bottom = the band the text fills. Equal = vertically centred. Increase top → text DOWN, increase bottom → text UP */
 .marquee-track{display:flex;gap:0;align-items:center;white-space:nowrap;color:#fff;flex:none;width:max-content;
      animation:scroll 18s linear infinite;will-change:transform}   /* width:max-content → translateX(-50%) is half the REAL content, so the loop is seamless (no jump) */
 .marquee:hover .marquee-track{animation-play-state:paused}
@@ -334,10 +334,11 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
 }
 /* ---------- mobile (phones) ---------- */
 @media(max-width:540px){
-  html{zoom:1;--play-size:28px}   /* phones: real viewport · smaller default tester size (#2 — lower this number to shrink it more). NOTE: no overflow-x:clip here — it breaks position:sticky (marquee + metric box) */
-  #vbar{zoom:1}               /* keep the custom scrollbar 1:1 now that html isn't zoomed */
-  /* #1 — keep the metric box pinned at the top like desktop (tune the top offset here) */
-  .metrics-pane{position:sticky;top:clamp(46px,11vw,64px)}
+  html{zoom:1}   /* tester size is now responsive via the clamp in :root, so no mobile override needed */
+  #vbar{display:none}         /* hide the custom scrollbar on phones */
+  /* #1 — metric box pinned at top (lower the top number to raise it); cream bg so the scrolling grid doesn't show through the buttons */
+  .metrics-pane{position:sticky;top:clamp(36px,9vw,50px);background:var(--bg);padding-bottom:10px;z-index:20}
+  .metrics-pane .metric-info,.metrics-pane .toolbar{background:var(--bg)}   /* solid cream behind the buttons so the scrolling grid never shows through */
   /* footer stacks */
   .foot-grid{flex-direction:column;align-items:flex-start;gap:30px}
   .foot-credits{gap:24px;row-gap:22px}
@@ -354,7 +355,9 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
   .hero-main{width:90%}
   .grid{grid-template-columns:repeat(auto-fill,minmax(46px,1fr))}
   .glyph{font-size:30px}
-  /* #3 — marquee: keep the WHOLE frame (no side-clipping), fill the (short) ribbon as much as possible */
-  .marquee-wrap{padding-left:4px;padding-right:4px}
-  .marquee-mask{top:8%;bottom:8%}   /* MOBILE: equal = centred. Increase top → text DOWN, increase bottom → text UP */
+  /* #3 — marquee: fixed ribbon height so the flowing text is readable (frame fills it, sides clip). full width (no side gaps). height ↑ = bigger text + more clip, ↓ = smaller + less clip */
+  .marquee-wrap{padding-left:0;padding-right:0}
+  .marquee{height:clamp(26px,7vw,34px)}
+  .marquee .frame-bg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:auto;max-width:none;height:100%}
+  .marquee-mask{top:8%;bottom:8%;left:0;right:0}   /* mobile: full width. equal top/bottom = centred */
 }
