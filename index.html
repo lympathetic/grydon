@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Grydon — Interactive Type Specimen</title>
-<link rel="stylesheet" href="styles.css?v=20">
+<link rel="stylesheet" href="styles.css?v=26">
 </head>
 <body>
 
@@ -326,8 +326,8 @@ function buildMarquee(){
   // mobile: live-text version (robust — no image loading needed). ornaments via unicode; ss01 applied in CSS.
   const tt=document.getElementById('track-text');
   if(tt){
-    const o=c=>'<span class="orn">'+c+'</span>';   // ornaments wrapped so CSS can bump them +1px
-    const word='<span class="marq-word">'+o('❧')+'GRYDON'+o('❧')+'THE'+o('⁑')+'TYPEFACE'+o('✦')+'FOR'+o('†')+'NATURAL'+o('⋮')+'HISTORY'+o('✢')+'</span>';
+    const o=(c,cls)=>'<span class="orn '+cls+'">'+c+'</span>';   // each ornament gets its own class so any single one can be tuned in CSS
+    const word='<span class="marq-word">'+o('❧','o-heart')+'GRYDON'+o('❧','o-heart')+'THE'+o('⁑','o-ast2')+'TYPEFACE'+o('✦','o-star')+'FOR'+o('†','o-dag')+'NATURAL'+o('︙','o-dots')+'HISTORY'+o('✢','o-star2')+'</span>';
     tt.innerHTML=word.repeat(4);
   }
 }
