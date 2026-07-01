@@ -17,14 +17,14 @@
   --play-size:clamp(33px,6vw,87px);   /* tester field size — responsive: small on narrow screens, big on wide. slider overrides it live. tune the 22/6vw/80 */
 }
 *{box-sizing:border-box;margin:0;padding:0}
-html{scroll-behavior:smooth;background:var(--bg)}
+html{scroll-behavior:smooth;background:var(--bg);overflow-x:hidden}   /* contain any horizontal overflow at the root so iOS doesn't expand the viewport (which was breaking the mobile media query). hidden = works on every iOS version, and (unlike clip) keeps position:sticky working */
 /* apply the 1.5× "designed at 150%" zoom ONLY on mouse/desktop — NOT on touch phones (so mobile media queries fire correctly). device-based → no oscillation, no iOS width inflation */
 @media (hover:hover) and (pointer:fine){
   html{zoom:1.5}
   #vbar{zoom:.6667}
 }
 body{font-family:'Grydon',system-ui,sans-serif;background:var(--bg);color:var(--ink);
-     -webkit-font-smoothing:antialiased;line-height:1.2;overflow-x:clip}   /* clip (not hidden) → no scrollbar gutter on the right, and doesn't break position:sticky */
+     -webkit-font-smoothing:antialiased;line-height:1.2;overflow-x:hidden}   /* hidden (broad iOS support) contains overflow; native scrollbar is hidden below so no gutter shows */
 img{max-width:100%}
 /* hide the native scrollbar (both html and body) so no scrollbar gutter shows on the right; a custom floating bar (below) gives the visual */
 html,body{scrollbar-width:none;-ms-overflow-style:none}
@@ -339,6 +339,8 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
 }
 /* ---------- mobile (phones) ---------- */
 @media(max-width:540px){
+  /* === DIAGNOSTIC: if you see a RED bar at the very top of the page on your phone, this media query IS firing. If NO red bar, it is NOT firing. Tell me which. (remove later) === */
+  body{border-top:20px solid red}
   /* zoom is now applied device-based (mouse only) higher up, so phones already have no zoom — don't re-set it here or narrow desktop windows oscillate */
   #vbar{display:none}         /* hide the custom scrollbar on phones */
   /* #1 — metric box pinned at top (lower the top number to raise it); cream bg so the scrolling grid doesn't show through the buttons */
