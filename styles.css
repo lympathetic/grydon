@@ -355,9 +355,8 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
   .hero-main{width:90%}
   .grid{grid-template-columns:repeat(auto-fill,minmax(46px,1fr))}
   .glyph{font-size:30px}
-  /* #3 — marquee: fixed ribbon height so the flowing text is readable (frame fills it, sides clip). full width (no side gaps). height ↑ = bigger text + more clip, ↓ = smaller + less clip */
+  /* #3 — marquee: widen the frame so the ribbon gets taller and the text is readable (sides clip). robust on iOS (frame stays in normal flow). 200% = ~2× taller. higher % = bigger text + more clip, lower = less clip + smaller text */
   .marquee-wrap{padding-left:0;padding-right:0}
-  .marquee{height:clamp(26px,7vw,34px)}
-  .marquee .frame-bg{position:absolute;top:0;left:50%;transform:translateX(-50%);width:auto;max-width:none;height:100%}
+  .marquee .frame-bg{width:200%;max-width:none;margin-left:-50%}
   .marquee-mask{top:8%;bottom:8%;left:0;right:0}   /* mobile: full width. equal top/bottom = centred */
 }
