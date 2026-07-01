@@ -365,7 +365,7 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
   .marquee-wrap{padding-left:0;padding-right:0}
   .marquee{height:46px;background:#0b0b0b}   /* dark bar (fixed so it always matches the font). cream text contrasts. move font-size with this: font ≈ height ÷ 0.82 to fill top-to-bottom */
   .marquee .frame-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;max-width:none;margin:0}
-  .marquee-mask{top:0;bottom:0;left:0;right:0}   /* full bar = text band (no inset) so the caps can fill top-to-bottom */
+  .marquee-mask{top:9%;bottom:0;left:0;right:0}   /* top inset pushes the caps DOWN to visual centre (0/0 looks high because the line box reserves empty descender space below the caps). ↑ top = text lower, ↓ top = text higher */
   #track{display:none}                              /* hide the image strip on phones */
   .marquee-track-text{display:flex;align-items:center;font-family:'Grydon',serif;font-weight:900;color:#efe9e2;letter-spacing:0.1px;line-height:1}   /* letter-spacing = gap between glyphs. tiny (0.1px) now; raise to 0.5px/1px for more */
   .marquee-track-text .marq-word{font-size:35px;-webkit-font-feature-settings:"ss01" 1;font-feature-settings:"ss01" 1}   /* ← size lever (beats the base `.marquee-track span` cap). ss01 via feature-settings (same method the glyph tester uses, so it works) */
