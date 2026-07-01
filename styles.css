@@ -365,7 +365,7 @@ footer#site-footer{position:relative;background:#000000;color:#efe9e2;margin-top
   .marquee-wrap{padding-left:0;padding-right:0}
   .marquee{height:46px;background:#0b0b0b}   /* dark bar (fixed so it always matches the font). cream text contrasts. move font-size with this: font ≈ height ÷ 0.82 to fill top-to-bottom */
   .marquee .frame-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:center;max-width:none;margin:0}
-  .marquee-mask{top:2%;bottom:2%;left:0;right:0}   /* full bar = text band (no inset) so the caps can fill top-to-bottom */
+  .marquee-mask{top:0;bottom:0;left:0;right:0}   /* full bar = text band (no inset) so the caps can fill top-to-bottom */
   #track{display:none}                              /* hide the image strip on phones */
   .marquee-track-text{display:flex;align-items:center;font-family:'Grydon',serif;font-weight:900;
      font-feature-settings:"ss01" 1;color:#efe9e2;font-size:56px;letter-spacing:0;line-height:1}   /* caps ≈ 0.82×this ≈ 46px = the bar height → fills top-to-bottom. move together with .marquee height. letter-spacing = glyph gap (negative to tighten). ss01 = variants */
